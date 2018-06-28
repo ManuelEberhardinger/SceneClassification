@@ -4,3 +4,4 @@ serialized_nets/
 Testset/
 Trainingsset/
 __pycache__/
+.idea/
