@@ -1,0 +1,6 @@
+json/
+results/
+serialized_nets/
+Testset/
+Trainingsset/
+__pycache__/
