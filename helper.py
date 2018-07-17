@@ -1,5 +1,5 @@
 from torchvision import transforms
-import customtransforms
+from SimilarPlacesNetwork.customtransforms import RandomVerticalFlip, RandomRotation
 from torch.autograd import Variable
 import torch
 import torch.nn.functional as F
@@ -19,8 +19,6 @@ class TransformationHelper:
                 #transforms.Lambda(lambda x: x.convert('L')),
                 transforms.RandomResizedCrop(self.std_image_size),
                 transforms.RandomHorizontalFlip(),
-                customtransforms.RandomVerticalFlip(),
-                customtransforms.RandomRotation(),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
@@ -103,19 +101,23 @@ class TestHelper:
             print("Total precision: %2d %%" % (100*correct / sum(self.class_total)), file=f)
 
 
-class JsonLocationLoader:
+class JsonLocationsHelper:
 
-    def __init__(self, path, classes):
+    def __init__(self, path):
         self.path = path
-        self.classes = classes
-        self.dict = {}
+        self.classes = [x for x in os.listdir(path) if "." not in x]
+        self.locations = None
 
     def load_all_locations(self):
-        for label in self.classes:
-            self.dict[label] = self.load_locations_for_label(label)
-        return self.dict
+        if self.locations is None:
+            self.locations = {}
+            for label in self.classes:
+                self.locations[label.lower()] = self.load_locations_for_label(label)
+
+        return self.locations
 
     def load_locations_for_label(self, label):
+
         label_path = os.path.join(self.path, label)
         locations = {}
         files = [x for x in os.listdir(label_path) if x.endswith("json")]
@@ -125,7 +127,24 @@ class JsonLocationLoader:
                 image_id = os.path.splitext(file)[0]
                 content = json.load(f)
                 if content is not None:
-                    locations[image_id] = content
+                    country = content["attributes"]["table"]["country"]
+                    if country is not None:
+                        if country not in locations:
+                            locations[country] = {}
+
+                        locations[country][image_id] = content
 
         return locations
+
+    def get_locations_for_label(self, label):
+        if self.locations is None:
+            self.load_all_locations()
+
+        locations = self.locations.get(label.lower())
+        return locations
+
+    def get_all_labels(self):
+        return self.classes
+
+
 

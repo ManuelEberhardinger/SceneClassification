@@ -1,10 +1,13 @@
 import os
 import shutil
+import csv
 from PIL import Image
+
 
 def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+
 
 # create directory from the classification file for the classification types
 # filename: the filename of the classification file
@@ -50,7 +53,7 @@ def create_directories_for_class(filename, src, dest, classification_types):
                 print("File will be deleted: ", k)
                 os.remove(k)
                 deleted = deleted+1
-        elif(v != '' and os.path.exists(dest + classification_types[v]+ '/' + k.split('/')[-1])):
+        elif v != '' and os.path.exists(dest + classification_types[v]+ '/' + k.split('/')[-1]):
             already_exists = already_exists+1
             continue
         else:
@@ -58,6 +61,7 @@ def create_directories_for_class(filename, src, dest, classification_types):
             print("not exists: ",k,v)
 
     print("Moved: ", moved, " Deleted: ", deleted, " not exists: ", not_exists, " already moved: ", already_exists)
+
 
 # changes the image format in png if there are tif images in the trainingset
 def change_image_format(folder, format):
@@ -82,6 +86,7 @@ def change_image_format(folder, format):
                     except Exception as e:
                         print(e)
 
+
 # augmentation for the images, if the traingssize is to small
 # rotate images with the given rotation as an integer
 def rotate_images_in_folder(folder, rotation):
@@ -104,3 +109,4 @@ def rotate_images_in_folder(folder, rotation):
 
             except Exception as e:
                 print(e)
+

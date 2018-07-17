@@ -2,8 +2,43 @@ import os
 import torch
 from torch.autograd import Variable
 import time
-import helper
+from SimilarPlacesNetwork import helper
 import torch.utils.data as data_loader
+import torchvision.models as pretrained_models
+import torch.nn.functional as F
+
+
+net = pretrained_models.resnet34(pretrained=True)
+net.fc = torch.nn.Linear(512, 8)
+net.load_state_dict(torch.load(os.getcwd() + '/SimilarPlacesNetwork/serialized_nets/ResNet152SimilarPlaces_v1000', map_location="cpu"))
+
+
+def classify_image(image, classes):
+    mapped_classes = get_class_mapping(classes)
+    transformations = helper.TransformationHelper().get_test_transformations()
+    image = transformations(image).float()
+    image = Variable(image).unsqueeze(0)
+    outputs = net(image)
+    probs = F.softmax(outputs, 1)
+    probs = probs.data.numpy()[0]
+    percentage_probs = [i * 100 for i in probs]
+    _, predicted = torch.max(outputs.data, 1)
+    print("PREDICTION:", predicted)
+    print(percentage_probs)
+
+    result = {
+        'label': mapped_classes.get(predicted.item()),
+        'probs': percentage_probs,
+        'classes': mapped_classes
+    }
+
+    return result
+
+
+def get_class_mapping(classes):
+    classes.sort()
+    class_to_idx = {i: classes[i] for i in range(len(classes))}
+    return class_to_idx
 
 
 # trains a given network with the dataloader and the iterations given

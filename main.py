@@ -41,7 +41,7 @@ json_locations_helper = helper.JsonLocationLoader("json", dset_classes)
 locations_dict = json_locations_helper.load_all_locations()
 for loc in locations_dict:
     print(loc, ":", len(locations_dict[loc]))
-    #print(locations_dict[loc])
+    print(locations_dict[loc].keys())
 
 
 #neuralnetwork.train_network(net, dset_loader, testset, 1000, optim.Adam(net.parameters()), nn.CrossEntropyLoss(), device)

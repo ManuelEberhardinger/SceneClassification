@@ -1,5 +1,5 @@
 from torchvision import datasets
-from PIL import Image
+
 
 class MyImageFolder(datasets.ImageFolder):
     # Overwrite getitem so you get also a path for the image file.
