@@ -33,19 +33,25 @@ dset = customdataloader.MyImageFolder(data_dir, transform_helper.get_trainings_t
 dset_loader = data_loader.DataLoader(dset, shuffle=True, num_workers=4, batch_size=4)
 dset_classes = dset.classes
 
-net = pretrained_models.resnet34(pretrained=True)
-net.fc = torch.nn.Linear(512, len(dset_classes))
-net.load_state_dict(torch.load(os.getcwd() + '/serialized_nets/ResNet152SimilarPlaces_v1000', map_location=str(device)))
+net = pretrained_models.resnet50(pretrained=True)
 
-json_locations_helper = helper.JsonLocationLoader("json", dset_classes)
-locations_dict = json_locations_helper.load_all_locations()
-for loc in locations_dict:
-    print(loc, ":", len(locations_dict[loc]))
-    print(locations_dict[loc].keys())
+ct = 0
+for child in net.children():
+    ct += 1
+    if ct < 7:
+        for param in child.parameters():
+            param.requires_grad = False
+net.fc = torch.nn.Linear(2048, len(dset_classes))
+#net.load_state_dict(torch.load(os.getcwd() + '/serialized_nets/ResNet18SimilarPlaces_v1000'))
+neuralnetwork.train_network(net, dset_loader, testset, 1000, optim.Adam(filter(lambda p: p.requires_grad, net.parameters()), lr=0.0001), nn.CrossEntropyLoss(), device)
 
+print("Training finished")
+tester = helper.TestHelper(testset_loader, testset.classes, net, device)
+tester.test_total_precision()
+tester.print_total_precision("ResNet34", "Finished")
 
-#neuralnetwork.train_network(net, dset_loader, testset, 1000, optim.Adam(net.parameters()), nn.CrossEntropyLoss(), device)
-#print("Training finished")
-#tester = helper.TestHelper(testset_loader, testset.classes, net, device)
-#tester.test_total_precision()
-#tester.print_total_precision("ResNet34", "Finished")
+#json_locations_helper = helper.JsonLocationLoader("json", dset_classes)
+#locations_dict = json_locations_helper.load_all_locations()
+#for loc in locations_dict:
+#    print(loc, ":", len(locations_dict[loc]))
+#    print(locations_dict[loc].keys())
