@@ -8,9 +8,9 @@ import torchvision.models as pretrained_models
 import torch.nn.functional as F
 
 
-net = pretrained_models.resnet34(pretrained=True)
-net.fc = torch.nn.Linear(512, 8)
-net.load_state_dict(torch.load(os.getcwd() + '/SimilarPlacesNetwork/serialized_nets/ResNet152SimilarPlaces_v1000', map_location="cpu"))
+net = pretrained_models.resnet50(pretrained=True)
+net.fc = torch.nn.Linear(2048, 10)
+net.load_state_dict(torch.load(os.getcwd() + '/SimilarPlacesNetwork/serialized_nets/ResNet50SimilarPlaces_v1000', map_location="cpu"))
 
 
 def classify_image(image, classes):
